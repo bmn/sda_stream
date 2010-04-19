@@ -1,3 +1,5 @@
-sda_stream is a simple webpage developed in Javascript for Speed Demos Archive <http://speeddemosarchive.com>.
+sda_stream is a simple webpage developed in Javascript for Speed Demos Archive <http://speeddemosarchive.com/>.
 
-It shows a listing of known speedrunners on SDA and embeds uStream players for those that are currently streaming.
+It shows a listing of known speedrunners on SDA and embeds Ustream players for those that are currently streaming.
+
+To use this script you require a Ustream API key to receive the channel data. To get one, register on the Ustream Developer Network <http://developer.ustream.tv/>, and put your key in the indicated part of config.js.
