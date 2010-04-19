@@ -1,0 +1,86 @@
+<!--
+  SDA uStream Listing
+  Author: Ian "bmn" Bennett
+  
+  Version History:
+  0.1 <2010/04/17> Initial version.
+-->
+<html>
+  <head>
+    <title>Speed Demos Archive uStreamers</title>
+    <style type="text/css">
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        background-color: #222;
+        color: #eee;
+        text-align: center;
+      }
+      div.wrapper {
+        margin: 0 auto;
+      }
+      div.entry {
+        float: left;
+        margin: 10px 5px;
+        width: 400px;
+      }
+      div.synopsis {
+        margin-top: 3px;
+        height: 30px;
+      }
+      h1 {
+        margin-bottom: 0;
+      }
+      h2 {
+        padding-top: 25px;
+        margin-bottom: 5px;
+        clear: both;
+      }
+      h3 {
+        margin: 2px;
+        font-size: 18px;
+      }
+      h3 > a {
+        text-decoration: none;
+        color: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Speed Demos Archive uStreamers</h1>
+    <script type="text/javascript">
+      // Set the fields for the users array
+      f = { id: 0, name: 1, channel: 2, synopsis: 3 };
+      
+      // Nice centered goodness
+      window_width = (self.innerHeight) ? self.innerWidth : (document.documentElement && document.documentElement.clientHeight) ? document.documentElement.clientWidth : (document.body) ? document.body.clientWidth : false;
+      wrapper = (window_width) ? ' style="width: '+ (window_width - (window_width % 410)) +'px"' : '';
+      
+      // This does most of the work
+      function createContent(title, users) {
+        var u;
+        document.write('<h2>'+title+'</h2><div class="wrapper"'+wrapper+'>');
+        for ( var i in users ) {
+          u = users[i];
+          document.write(' \
+<div class="entry"> \
+  <h3> \
+    <a href="http://www.ustream.tv/channel/'+u[f['channel']]+'">'+u[f['name']]+'</a> \
+  </h3> \
+  <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" width="400" height="320"> \
+    <param name="flashvars" value="autoplay=false&amp;brand=embed&amp;cid='+u[f['id']]+'"/> \
+    <param name="allowfullscreen" value="true"/> \
+    <param name="allowscriptaccess" value="always"/> \
+    <param name="movie" value="http://www.ustream.tv/flash/live/1/'+u[f['id']]+'"/> \
+    <embed flashvars="autoplay=false&amp;brand=embed&amp;cid='+u[f['id']]+'" width="400" height="320" allowfullscreen="true" allowscriptaccess="always" src="http://www.ustream.tv/flash/live/1/'+u[f['id']]+'" type="application/x-shockwave-flash" /> \
+  </object> \
+  <div class="synopsis">'+u[f['synopsis']]+'</div> \
+</div> \
+          ');
+        }
+        document.write('</div>');
+      }
+    </script>
+    <script type="text/javascript" src="config.js"></script>
+  </body>
+</html>

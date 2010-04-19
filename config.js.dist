@@ -1,0 +1,12 @@
+/*
+  Channel Listing
+*/
+createContent( 'Category Name', [
+  [ channel_id, 'Username', 'channel-name', "Synopsis" ],
+  [ channel_id, 'Username', 'channel-name', "Synopsis" ],
+] );
+      
+createContent( 'Category Name', [
+  [ channel_id, 'Username', 'channel-name', "Synopsis" ],
+  [ channel_id, 'Username', 'channel-name', "Synopsis" ],
+] );
