@@ -1,12 +1,12 @@
 /*
-  Channel Listing
+  Channel List
 */
-createContent( 'Category Name', [
-  [ channel_id, 'Username', 'channel-name', "Synopsis" ],
-  [ channel_id, 'Username', 'channel-name', "Synopsis" ],
-] );
-      
-createContent( 'Category Name', [
-  [ channel_id, 'Username', 'channel-name', "Synopsis" ],
-  [ channel_id, 'Username', 'channel-name', "Synopsis" ],
-] );
+channels = { 
+  "channel-name": "Synopsis",
+  "channel-name": "Synopsis"
+};
+
+/*
+  uStream API Key
+*/
+key = 'ustream_api_key_goes_here';

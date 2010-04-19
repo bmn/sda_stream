@@ -4,6 +4,7 @@
   
   Version History:
   0.1 <2010/04/17> Initial version.
+  0.2 <2010/04/18> Streamlined JSON format; embeds for online streams only.
 -->
 <html>
   <head>
@@ -22,11 +23,15 @@
       div.entry {
         float: left;
         margin: 10px 5px;
-        width: 400px;
+        width: 340px;
       }
       div.synopsis {
         margin-top: 3px;
         height: 30px;
+      }
+      #offline {
+        width: 900px;
+        margin: 0 auto;
       }
       h1 {
         margin-bottom: 0;
@@ -40,47 +45,78 @@
         margin: 2px;
         font-size: 18px;
       }
-      h3 > a {
+      a {
         text-decoration: none;
         color: inherit;
+        font-weight: bold;
       }
     </style>
   </head>
   <body>
     <h1>Speed Demos Archive uStreamers</h1>
-    <script type="text/javascript">
-      // Set the fields for the users array
-      f = { id: 0, name: 1, channel: 2, synopsis: 3 };
-      
+    <div id="wrapper">
+      <div id="online">
+      </div>
+    </div>
+    <div id="offline">
+    </div>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="config.js"></script>
+    <script type="text/javascript">    
+      // Summek kool
+      Object.size = function(obj) {
+        var size = 0, key;
+        for (key in obj) {
+            if (obj.hasOwnProperty(key)) size++;
+        }
+        return size;
+      };
+
       // Nice centered goodness
+      entry_width = 350;
       window_width = (self.innerHeight) ? self.innerWidth : (document.documentElement && document.documentElement.clientHeight) ? document.documentElement.clientWidth : (document.body) ? document.body.clientWidth : false;
-      wrapper = (window_width) ? ' style="width: '+ (window_width - (window_width % 410)) +'px"' : '';
+      max_entries = Math.floor(window_width / entry_width);
       
-      // This does most of the work
-      function createContent(title, users) {
-        var u;
-        document.write('<h2>'+title+'</h2><div class="wrapper"'+wrapper+'>');
-        for ( var i in users ) {
-          u = users[i];
-          document.write(' \
+      // Get the API data and make the content
+      req = '';
+      online = offline = {};
+      c_on = c_off = '';
+      ct_on = c = 0;
+      for (var i in channels) {
+        c++;
+        req = req+i+';';
+        if (((c % 10) == 0) || (c == (Object.size(channels)))) {
+          req = 'http://api.ustream.tv/json/channel/'+req.slice(0, -1)+'/getInfo?key='+key+'&callback=?';
+          $.getJSON(req, function(j) {
+            if (j) {
+              for (var k in j) {
+                var u = j[k]['result'];
+                u['synopsis'] = channels[u['urlTitleName']];
+                if (u['status'] == 'offline') {
+                  c_off = c_off+'<a href="'+u['url']+'" title="'+u['synopsis']+'">'+u['user']['userName']+'</a> : ';
+                }
+                else {
+                  ct_on++;
+                  c_on = c_on+' \
 <div class="entry"> \
   <h3> \
-    <a href="http://www.ustream.tv/channel/'+u[f['channel']]+'">'+u[f['name']]+'</a> \
+    <a href="http://www.ustream.tv/channel/'+u['urlTitleName']+'">'+u['user']['userName']+'</a> \
   </h3> \
-  <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" width="400" height="320"> \
-    <param name="flashvars" value="autoplay=false&amp;brand=embed&amp;cid='+u[f['id']]+'"/> \
-    <param name="allowfullscreen" value="true"/> \
-    <param name="allowscriptaccess" value="always"/> \
-    <param name="movie" value="http://www.ustream.tv/flash/live/1/'+u[f['id']]+'"/> \
-    <embed flashvars="autoplay=false&amp;brand=embed&amp;cid='+u[f['id']]+'" width="400" height="320" allowfullscreen="true" allowscriptaccess="always" src="http://www.ustream.tv/flash/live/1/'+u[f['id']]+'" type="application/x-shockwave-flash" /> \
-  </object> \
-  <div class="synopsis">'+u[f['synopsis']]+'</div> \
+  '+u['embedTag']+' \
+  <div class="synopsis">'+u['synopsis']+'</div> \
 </div> \
-          ');
+                  ';
+                }
+              }
+              $("#wrapper").width( ((max_entries < ct_on) ? max_entries : ct_on) * entry_width);
+              $("#wrapper").css('margin', '0 auto');
+              if (c_on) $("#online").html('<h2>Running Now...</h2>'+c_on);
+              if (c_off) $("#offline").html('<h2>Lazy Bums...</h2>'+c_off.slice(0, -3));
+            }
+          });
+          req = '';
         }
-        document.write('</div>');
       }
     </script>
-    <script type="text/javascript" src="config.js"></script>
   </body>
 </html>
