@@ -90,7 +90,8 @@
           $.getJSON(req, function(j) {
             if (j) {
               for (var k in j) {
-                var u = j[k]['result'];
+                var single = (j[0] == null);
+                var u = (single) ? j : j[k]['result'];
                 u['synopsis'] = channels[u['urlTitleName']];
                 if (u['status'] == 'offline') {
                   c_off = c_off+'<a href="'+u['url']+'" title="'+u['synopsis']+'">'+u['user']['userName']+'</a> : ';
@@ -107,6 +108,7 @@
 </div> \
                   ';
                 }
+                if (single) break;
               }
               $("#wrapper").width( ((max_entries < ct_on) ? max_entries : ct_on) * entry_width);
               $("#wrapper").css('margin', '0 auto');
