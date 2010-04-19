@@ -7,6 +7,6 @@ channels = {
 };
 
 /*
-  uStream API Key
+  Ustream API Key
 */
 key = 'ustream_api_key_goes_here';
