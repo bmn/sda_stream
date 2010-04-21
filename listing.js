@@ -96,10 +96,10 @@ function SDAStream(d) {
   };
   
   d = d || {}
-  d.auto = d.auto || true;
+  d.auto = (d.auto != false);
   this.callback = d.callback;
   var vars = ['channels', 'key', 'skin', 'selectors'];
-  for (var i in vars) { this[vars[i]] = d[i] || window[vars[i]] }
+  for (var i in vars) { this[vars[i]] = d[vars[i]] || window[vars[i]] }
   this.setDefaults();
   this.setCenteringValues();
   if (d.auto) this.get();
