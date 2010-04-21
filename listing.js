@@ -45,7 +45,8 @@ function SDAStream(d, auto) {
     var req = '';
     var reqs = [];
     var c = 0;
-    this.online = this.offline = '';
+    this.content = { online: '', offline: '' };
+    this.online = this.offline = [];
     this.count = { on: 0, off: 0 };
     this.requests = { started: 0, done: 0 };
     for (var i in this.channels) {
@@ -71,11 +72,13 @@ function SDAStream(d, auto) {
         u['synopsis'] = channels[u['urlTitleName']];
         if (u['status'] == 'offline') {
           this.count.off++;
-          this.offline += s.offline_entry( {channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], synopsis: u['synopsis'] } ) + s.offline_separator;
+          this.offline.push(u);
+          this.content.offline += s.offline_entry( {channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], synopsis: u['synopsis'] } ) + s.offline_separator;
         }
         else {
           this.count.on++;
-          this.online += s.online_entry( {channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], embed: u['embedTag'], synopsis: u['synopsis'] } ) + s.online_separator;
+          this.online.push(u);
+          this.content.online += s.online_entry( {channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], embed: u['embedTag'], synopsis: u['synopsis'] } ) + s.online_separator;
         }
         if (single) break;
       }
@@ -85,8 +88,8 @@ function SDAStream(d, auto) {
           $(sel.wrapper).width( ((w.max_entries < this.count.on) ? w.max_entries : this.count.on) * w.entry);
           $(sel.wrapper).css('margin', '0 auto');
         }
-        if ((this.online) && (sel.online)) $(sel.online).html( s.online( {content: this.online.slice(0, -s.online_separator.length || -1), count: this.count.on} ) );
-        if ((this.offline) && (sel.offline)) $(sel.offline).html( s.offline( {content: this.offline.slice(0, -s.offline_separator.length || -1), count: this.count.off} ) );
+        if ((this.online) && (sel.online)) $(sel.online).html( s.online( {content: this.content.online.slice(0, -s.online_separator.length || -1), count: this.count.on} ) );
+        if ((this.offline) && (sel.offline)) $(sel.offline).html( s.offline( {content: this.content.offline.slice(0, -s.offline_separator.length || -1), count: this.count.off} ) );
       }
     }
   };
