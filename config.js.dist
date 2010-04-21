@@ -10,3 +10,18 @@ channels = {
   Ustream API Key
 */
 key = 'ustream_api_key_goes_here';
+
+/*
+  Skin Overrides
+  Remove the comments ( /* and */ ) enclosing the below code to enable overrides.
+*/
+/*
+skin = {
+  online: function(d) { return '<h2>Running Now...</h2>'+d.content; },
+  offline: function(d) { return '<h2>Lazy Bums...</h2>'+d.content; },
+  online_entry: function(d) { return '<div class="entry"><h3><a href="'+d['url']+'">'+d['username']+'</a></h3>'+d['embed']+'<div class="synopsis">'+d['synopsis']+'</div></div>'; },
+  offline_entry: function(d) { return '<a href="'+d['url']+'" title="'+d['synopsis']+'">'+d['username']+'</a>'; },
+  online_separator: '',
+  offline_separator: ' : '
+}
+*/
