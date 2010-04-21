@@ -32,7 +32,7 @@ skin = {
   Set a selector to null, false, or 0 (no quotes) to disable it.
 */
 /*
-def = {
+selectors = {
   wrapper: '#wrapper',
   online: '#online',
   offline: '#offline'

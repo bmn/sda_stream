@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <title>sda_stream Basic Example</title>
+    <link href="style.css" type="text/css" rel="stylesheet" media="screen"/>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="../config.js"></script>
+    <script type="text/javascript" src="../listing.js"></script>
+  </head>
+  <body>
+    <h1>sda_stream Basic Example</h1>
+    <p>Here's the quickest way of getting sda_stream going:</p>
+    <ul>
+      <li>Rename <pre>config.js.dist</pre> to <pre>config.js</pre>.</li>
+      <li>Add all the channels you want to follow on Ustream to that file.</li>
+      <li><a href="http://developer.ustream.tv/">Get your Ustream API key from the Ustream Developer Network</a>, if you haven't already, and put that in as well.</li>
+      <li>Get a webpage and make sure <a href="http://jquery.com/">jQuery 1.4</a>, <pre>config.js</pre> and <pre>listing.js</pre> are being called.</li>
+      <li>Under all your HTML, run <pre>SDAStream()</pre> in Javascript (protip: assign it to a variable and keep Britain tidy!)</li>
+    </ul>
+    <p>See the result below.</p>
+    <div id="wrapper">
+      <div id="online">
+      </div>
+    </div>
+    <div id="offline">
+    </div>
+  </body>
+  <script type="text/javascript">
+    stream = new SDAStream();
+  </script>
+</html>

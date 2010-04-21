@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <title>sda_stream Multiple Instances Example</title>
+    <link href="style.css" type="text/css" rel="stylesheet" media="screen"/>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="../config.js"></script>
+    <script type="text/javascript" src="../listing.js"></script>
+  </head>
+  <body>
+    <h1>sda_stream Multiple Instances Example</h1>
+    <p>It's possible to run more than one SDAStream() instance at the same time:</p>
+    <ul>
+      <li>You can set up one instance maximum in the same way as in the basic example, but this isn't required.</li>
+      <li>When calling <pre>SDAStream()</pre>, pass it an object containing your settings for any of <pre>channels</pre>, <pre>key</pre>, <pre>skin</pre> and <pre>selectors</pre>.</li>
+    </ul>
+    <p>See the result below.</p>
+    <div id="wrapper">
+      <div id="online">
+      </div>
+    </div>
+    <div id="offline">
+    </div>
+    <marquee id="second" behaviour="slide">
+      <span class="online">
+      </span>
+      <span class="offline">
+      </span>
+    </marquee>
+  </body>
+  <script type="text/javascript">
+    stream = new SDAStream();
+    second_stream = new SDAStream( {
+      selectors: {
+        wrapper: false,
+        online: '#second .online',
+        offline: '#second .offline'
+      },
+      skin: {
+        online: function(d) { return 'Online: ' + d.content; },
+        offline: function(d) { return 'Offline: ' + d.content; },
+        online_entry: function(d) { return '<a href="'+d['url']+'">'+d['username']+'</a>'; },
+        offline_entry: function(d) { return d['username']; },
+        online_separator: ', ',
+        offline_separator: ', '
+      }
+    } );
+  </script>
+</html>

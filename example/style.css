@@ -19,7 +19,20 @@ div.synopsis {
 }
 #offline {
   width: 900px;
-  margin: 0 auto;
+  margin: 0 auto 35px auto;
+}
+#second {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  padding-top: 3px;
+  border-top: 1px solid #004;
+  background-color: #000;
+}
+#second .online {
+  margin-right: 20px;
 }
 h1 {
   margin-bottom: 0;
@@ -37,4 +50,7 @@ a {
   text-decoration: none;
   color: inherit;
   font-weight: bold;
+}
+pre {
+  display: inline;
 }

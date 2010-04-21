@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <title>sda_stream Advanced Example</title>
+    <link href="style.css" type="text/css" rel="stylesheet" media="screen"/>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="../config.js"></script>
+    <script type="text/javascript" src="../listing.js"></script>
+  </head>
+  <body>
+    <h1>sda_stream Advanced Example</h1>
+    <p>sda_stream has a couple more options that give you greater control over it:</p>
+    <ul>
+      <li>You can tell sda_stream to sit tight until you need it - pass it an object containing <pre>auto: false</pre> and use <pre>stream.get()</pre> to set it off.</li>
+      <li>Give it a callback reference with <pre>callback: your_callback_function</pre> and when it's finished grabbing data it'll hand the reins to you, with the <pre>SDAStream()</pre> object as its argument.</li>
+      <li>The raw data from the API is held in the <pre>data.online</pre> and <pre>data.offline</pre> arrays.</li>
+    </ul>
+    <p>See the result below.</p>
+    <input type="button" onclick="stream.get()" value="Click me plz ^^"/>
+  </body>
+  <script type="text/javascript">
+    stream = new SDAStream( {
+      selectors: {
+        wrapper: false,
+        online: false,
+        offline: false
+      },
+      auto: false,
+      callback: function(data) {
+        var content = '';
+        if (data.count.on > 0) {
+          for (var i in data.online) { content += '[' + data.online[i].user.userName + '] '; }
+          window.alert(data.count.on + ((data.count.on == 1) ? ' person is' : ' people are') + ' currently online:\n' + content);
+        }
+        else window.alert("No-one's online :(");
+      }
+    } );
+  </script>
+</html>
