@@ -88,8 +88,8 @@ function SDAStream(d) {
           $(sel.wrapper).width( ((w.max_entries < this.count.on) ? w.max_entries : this.count.on) * w.entry);
           $(sel.wrapper).css('margin', '0 auto');
         }
-        if ((this.online) && (sel.online)) $(sel.online).html( s.online( {content: this.content.online.slice(0, -s.online_separator.length || -1), count: this.count.on} ) );
-        if ((this.offline) && (sel.offline)) $(sel.offline).html( s.offline( {content: this.content.offline.slice(0, -s.offline_separator.length || -1), count: this.count.off} ) );
+        if ((this.content.online) && (sel.online)) $(sel.online).html( s.online( {content: this.content.online.slice(0, -s.online_separator.length || -1), count: this.count.on} ) );
+        if ((this.content.offline) && (sel.offline)) $(sel.offline).html( s.offline( {content: this.content.offline.slice(0, -s.offline_separator.length || -1), count: this.count.off} ) );
         if (this.callback) this.callback(this);
       }
     }
