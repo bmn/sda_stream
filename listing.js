@@ -46,7 +46,8 @@ function SDAStream(d) {
     var reqs = [];
     var c = 0;
     this.content = { online: '', offline: '' };
-    this.online = this.offline = [];
+    this.online = [];
+    this.offline = [];
     this.count = { on: 0, off: 0 };
     this.requests = { started: 0, done: 0 };
     for (var i in this.channels) {
