@@ -1,4 +1,4 @@
-function SDAStream(d) {
+function SDAStream(d, auto) {
 
   // Defaults
   this.setDefaults = function() {
@@ -43,17 +43,22 @@ function SDAStream(d) {
   // Get the API data and make the content
   this.doApiRequest = function() {
     var req = '';
+    var reqs = [];
     var c = 0;
     this.online = this.offline = '';
     this.count = { on: 0, off: 0 };
+    this.requests = { started: 0, done: 0 };
     for (var i in this.channels) {
       c++;
       req += i+';';
       if (((c % 10) == 0) || (c == (Object.size(channels)))) {
-        req = 'http://api.ustream.tv/json/channel/'+req.slice(0, -1)+'/getInfo?key='+key+'&callback=?';
-        $.getJSON(req, null, jQuery.proxy(this, 'parseApiResponse'));
+        reqs.push('http://api.ustream.tv/json/channel/'+req.slice(0, -1)+'/getInfo?key='+key+'&callback=?');
         req = '';
       }
+    }
+    for (var i in reqs) {
+      this.requests.started++;
+      $.getJSON(reqs[i], null, jQuery.proxy(this, 'parseApiResponse'));
     }
   };
   
@@ -74,12 +79,15 @@ function SDAStream(d) {
         }
         if (single) break;
       }
-      if (sel.wrapper) {
-        $(sel.wrapper).width( ((w.max_entries < this.count.on) ? w.max_entries : this.count.on) * w.entry);
-        $(sel.wrapper).css('margin', '0 auto');
+      this.requests.done++;
+      if (this.requests.done == this.requests.started) {
+        if (sel.wrapper) {
+          $(sel.wrapper).width( ((w.max_entries < this.count.on) ? w.max_entries : this.count.on) * w.entry);
+          $(sel.wrapper).css('margin', '0 auto');
+        }
+        if ((this.online) && (sel.online)) $(sel.online).html( s.online( {content: this.online.slice(0, -s.online_separator.length || -1), count: this.count.on} ) );
+        if ((this.offline) && (sel.offline)) $(sel.offline).html( s.offline( {content: this.offline.slice(0, -s.offline_separator.length || -1), count: this.count.off} ) );
       }
-      if ((this.online) && (sel.online)) $(sel.online).html( s.online( {content: this.online.slice(0, -s.online_separator.length || -1), count: this.count.on} ) );
-      if ((this.offline) && (sel.offline)) $(sel.offline).html( s.offline( {content: this.offline.slice(0, -s.offline_separator.length || -1), count: this.count.off} ) );
     }
   };
   
@@ -88,6 +96,6 @@ function SDAStream(d) {
   for (var i in vars) { this[vars[i]] = d[i] || window[vars[i]] }
   this.setDefaults();
   this.setCenteringValues();
-  this.doApiRequest();
+  if ((auto) || (typeof(auto) == 'undefined')) this.doApiRequest();
 
 }
