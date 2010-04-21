@@ -25,3 +25,16 @@ skin = {
   offline_separator: ' : '
 }
 */
+
+/*
+  CSS Selector Overrides
+  Use these if you have different selectors for these areas of the page.
+  Set a selector to null, false, or 0 (no quotes) to disable it.
+*/
+/*
+def = {
+  wrapper: '#wrapper',
+  online: '#online',
+  offline: '#offline'
+}
+*/
