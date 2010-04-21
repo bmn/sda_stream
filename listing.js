@@ -1,4 +1,4 @@
-function SDAStream(d, auto) {
+function SDAStream(d) {
 
   // Defaults
   this.setDefaults = function() {
@@ -41,7 +41,7 @@ function SDAStream(d, auto) {
   };
     
   // Get the API data and make the content
-  this.doApiRequest = function() {
+  this.get = function() {
     var req = '';
     var reqs = [];
     var c = 0;
@@ -90,15 +90,18 @@ function SDAStream(d, auto) {
         }
         if ((this.online) && (sel.online)) $(sel.online).html( s.online( {content: this.content.online.slice(0, -s.online_separator.length || -1), count: this.count.on} ) );
         if ((this.offline) && (sel.offline)) $(sel.offline).html( s.offline( {content: this.content.offline.slice(0, -s.offline_separator.length || -1), count: this.count.off} ) );
+        if (this.callback) this.callback(this);
       }
     }
   };
   
   d = d || {}
+  d.auto = d.auto || true;
+  this.callback = d.callback;
   var vars = ['channels', 'key', 'skin', 'selectors'];
   for (var i in vars) { this[vars[i]] = d[i] || window[vars[i]] }
   this.setDefaults();
   this.setCenteringValues();
-  if ((auto) || (typeof(auto) == 'undefined')) this.doApiRequest();
+  if (d.auto) this.get();
 
 }
