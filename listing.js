@@ -46,7 +46,7 @@ function SDAStream(d) {
   this.setCenteringValues = function() {
     this.width = {
       entry: 350,
-      window: (self.innerHeight) ? self.innerWidth : (document.documentElement && document.documentElement.clientHeight) ? document.documentElement.clientWidth : (document.body) ? document.body.clientWidth : false,
+      window: (self.innerHeight) ? self.innerWidth : (document.documentElement && document.documentElement.clientHeight) ? document.documentElement.clientWidth : (document.body) ? document.body.clientWidth : false
     }
     this.width.max_entries = Math.floor(this.width.window / this.width.entry);
   };
