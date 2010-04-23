@@ -1,2 +1,4 @@
+/cache/*.json
+/config.php
 /config.js
 /index.html

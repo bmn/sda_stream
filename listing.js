@@ -61,12 +61,15 @@ function SDAStream(d) {
     this.offline = [];
     this.count = { on: 0, off: 0 };
     this.requests = { started: 0, done: 0 };
-    for (var i in this.channels) {
-      c++;
-      req += i+';';
-      if (((c % 10) == 0) || (c == (Object.size(channels)))) {
-        reqs.push('http://api.ustream.tv/json/channel/'+req.slice(0, -1)+'/getInfo?key='+key+'&callback=?');
-        req = '';
+    if (this.php) { reqs[0] = ((this.php == true) ? '' : this.php+'/') +'stream.php?callback=?'; }
+    else {
+      for (var i in this.channels) {
+        c++;
+        req += i+';';
+        if (((c % 10) == 0) || (c == (Object.size(channels)))) {
+          reqs.push('http://api.ustream.tv/json/channel/'+req.slice(0, -1)+'/getInfo?key='+key+'&callback=?');
+          req = '';
+        }
       }
     }
     for (var i in reqs) {
@@ -109,6 +112,7 @@ function SDAStream(d) {
   
   d = d || {}
   d.auto = (d.auto != false);
+  this.php = d.php;
   this.callback = d.callback;
   var vars = ['channels', 'key', 'skin', 'selectors'];
   for (var i in vars) { this[vars[i]] = d[vars[i]] || window[vars[i]] }

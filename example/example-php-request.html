@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <title>sda_stream PHP Request Example</title>
+    <link href="style.css" type="text/css" rel="stylesheet" media="screen"/>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="../config.js"></script>
+    <script type="text/javascript" src="../listing.js"></script>
+  </head>
+  <body>
+    <h1>sda_stream PHP Request Example</h1>
+    <p>By default Ustream only allows 5000 API requests per day, and a maximum of 10 channel checks per request. If you have a lot of users you'll reach 5000 quickly.</p>
+    <p>Also, having your API key publicly available makes it vulnerable to use by others. So it's best to use a server-side language to make your requests.</p>
+    <p>By telling SDAStream to use the included PHP script, you hide your key and can also have it store the result for a set period (default 1 minute). This saves on requests and speeds up your app.</p>
+    <ul>
+      <li>Make sure <pre>config.js</pre>, if it exists, doesn't contain any channels or your API key.</li>
+      <li>Rename <pre>config.php.dist</pre> to <pre>config.php</pre>, and add your channels and key to it.</li>
+      <li>Use the Javascript SDAStream as normal, but add the option <pre>php</pre> which should point to the sda_stream directory.</li>
+    </ul>
+    <p>See the result below.</p>
+    <div id="wrapper">
+      <div id="online">
+      </div>
+    </div>
+    <div id="offline">
+    </div>
+  </body>
+  <script type="text/javascript">
+    stream = new SDAStream({php: '..'});
+  </script>
+</html>

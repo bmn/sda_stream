@@ -1,5 +1,5 @@
-sda_stream is a Javascript library originally developed for Speed Demos Archive <http://speeddemosarchive.com/>.
+sda_stream is a Javascript and PHP library originally developed for Speed Demos Archive <http://speeddemosarchive.com/>.
 
 It allows you to show the status of a number of channels on live streaming site Ustream, by feeding it only the name of each channel. It's highly configurable, and flexible enough to let you do your own thing with the channel data it collects.
 
-To use this script you require a Ustream API key to receive the channel data. To get one, register on the Ustream Developer Network <http://developer.ustream.tv/>, and put your key in the indicated part of config.js.
+To use this script you require a Ustream API key to receive the channel data. To get one, register on the Ustream Developer Network <http://developer.ustream.tv/>, and put your key in the indicated part of config.js or config.php.

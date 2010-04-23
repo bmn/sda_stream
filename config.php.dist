@@ -1,0 +1,24 @@
+<?php
+
+/*
+  Channel List
+*/
+$channels = array(
+  "channel-name" => "Synopsis",
+  "channel-name" => "Synopsis"
+);
+
+/*
+  Ustream API Key
+*/
+$key = 'ustream_api_key_goes_here';
+
+/*
+  Time (in minutes) to cache the result before discarding it
+*/
+// $timer = 1;
+
+/*
+  Start of the cache file's filename
+*/
+// $cache = 'sda_stream';
