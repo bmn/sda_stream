@@ -84,7 +84,7 @@ function SDAStream(d) {
       for (var k in j) {
         var single = (j[0] == null);
         var u = (single) ? j : j[k]['result'];
-        u['synopsis'] = channels[u['urlTitleName']];
+        if (!u['synopsis']) u['synopsis'] = channels[u['urlTitleName']];
         if (u['status'] == 'offline') {
           this.count.off++;
           this.offline.push(u);

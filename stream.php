@@ -93,11 +93,12 @@ class SDAStream {
       }
       $c = $c['results'];
       if ((count($strs) == 1) && ($c['id'])) {
-        $this->content['php'] = array_merge($c, array('synopsis' => $this->channels[$v['urlTitleName']]));
+        $this->content['php'] = array_merge($c, array('synopsis' => $this->channels[$c['urlTitleName']]));
       } else {
         $c = ($c['id']) ? array(array('result' => $c)) : $c;
         foreach ($c as $r) {
-          $this->content['php'][] = array_merge($r, array('synopsis' => $this->channels[$v['urlTitleName']]));
+          $r['result']['synopsis'] = $this->channels[$r['result']['urlTitleName']];
+          $this->content['php'][] = $r;
         }
       }
     }
