@@ -49,6 +49,7 @@ function SDAStream(d) {
       window: (self.innerHeight) ? self.innerWidth : (document.documentElement && document.documentElement.clientHeight) ? document.documentElement.clientWidth : (document.body) ? document.body.clientWidth : false
     }
     this.width.max_entries = Math.floor(this.width.window / this.width.entry);
+    return this.width;
   };
     
   // Get the API data and make the content
