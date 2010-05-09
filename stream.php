@@ -29,7 +29,9 @@ class SDAStream {
     $this->cache = dirname(__FILE__)."{$s}cache{$s}{$c}.api.json";
   }
   
-  public function get($format) {
+  public function get($format = 'php') {
+    // Return the content if it's already been made in this pageload
+    if ($this->content[$format]) return self::return_data($this->content, $format);
     // Check for a cached API response and return it if it's still valid
     $f = $this->cache;
     if (file_exists($f)) {
@@ -39,9 +41,8 @@ class SDAStream {
         && is_readable($f)
        ) {
         $this->content['json'] = file_get_contents($f);
-        $this->content['php'] = json_decode($this->content['json']);
-        if ($_GET['callback']) { $this->content['json'] = $_GET['callback'].'('.$this->content['json'].');'; }
-        return $this->content[$format];
+        $this->content['php'] = json_decode($this->content['json'], true);
+        return self::return_data($this->content, $format);
        } else {
         unlink($f);
       }
@@ -107,9 +108,23 @@ class SDAStream {
     if (!is_dir(dirname($f))) { mkdir(dirname($f), true); }
     file_put_contents($f, $this->content['json']);
     $this->expires = (time() + $this->timer);
-    // Return the array or JSON, depending on the requested format.
-    if ($_GET['callback']) { $this->content['json'] = $_GET['callback'].'('.$this->content['json'].');'; }
-    return $this->content[$format];
+    // Return the data
+    return self::return_data($this->content, $format);
+  }
+  
+  private static function return_data($data, $format) {
+    // Return JSONP
+    if ($_GET['callback']) { $data['json'] = $_GET['callback'].'('.$data['json'].');'; }
+    // Return online/offline (PHP only)
+    if ($format == 'php') {
+      $out = array( array(), array() );
+      foreach ($data['php'] as $a) {
+        $out[ ($a['result']['status'] == 'offline') ? 1 : 0 ][] = $a['result'];
+      }
+      return $out;
+    }
+    // Other output
+    return $data[$format];
   }
   
   private static function http($url) {
@@ -125,8 +140,9 @@ class SDAStream {
   }
   
   public function headers() {
+    if ($this->expires == 0) $this->get('php');
     header("Expires: ".date('r', $this->expires));
-    header("Last-Modified: ".date('r', $this->expires));
+    header("Last-Modified: ".date('r', time()));
   }
 
 }
