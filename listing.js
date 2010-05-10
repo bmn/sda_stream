@@ -73,9 +73,12 @@ function SDAStream(d) {
         }
       }
     }
+    var opts = {dataType: 'json', success: jQuery.proxy(this, 'parseApiResponse')};
+    if (this.php) opts['jsonpCallback'] = 'sda_stream';
     for (var i in reqs) {
       this.requests.started++;
-      $.getJSON(reqs[i], null, jQuery.proxy(this, 'parseApiResponse'));
+      opts['url'] = reqs[i];
+      $.ajax(opts);
     }
   };
   
