@@ -54,3 +54,9 @@ a {
 pre {
   display: inline;
 }
+#offline > .entry:after {
+  content: ' : ';
+}
+#offline > .entry:last-child:after {
+  content: '';
+}

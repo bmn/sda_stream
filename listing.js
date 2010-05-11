@@ -16,12 +16,8 @@ function SDAStream(d) {
     // Skin
     var def;
     def = {
-      online: function(d) { return '<h2>Running Now...</h2>'+d.content; },
-      offline: function(d) { return '<h2>Lazy Bums...</h2>'+d.content; },
-      online_entry: function(d) { return '<div class="entry"><h3><a href="'+d['url']+'">'+d['username']+'</a></h3>'+d['embed']+'<div class="synopsis">'+d['synopsis']+'</div></div>'; },
-      offline_entry: function(d) { return '<a href="'+d['url']+'" title="'+d['synopsis']+'">'+d['username']+'</a>'; },
-      online_separator: '',
-      offline_separator: ' : '
+      online_entry: function(d) { return '<div class="entry '+d['channel']+'"><h3><a href="'+d['url']+'">'+d['username']+'</a></h3>'+d['embed']+'<div class="synopsis">'+d['synopsis']+'</div></div>'; },
+      offline_entry: function(d) { return '<span class="entry '+d['channel']+'"><a href="'+d['url']+'" title="'+d['synopsis']+'">'+d['username']+'</a></span>'; },
     }
     for (var i in this.skin) { def[i] = this.skin[i]; }
     this.skin = def;
@@ -29,7 +25,8 @@ function SDAStream(d) {
     def = {
       wrapper: '#wrapper',
       online: '#online',
-      offline: '#offline'
+      offline: '#offline',
+      hide: '.hide'
     }
     for (var i in this.selectors) { def[i] = this.selectors[i]; }
     this.selectors = def;
@@ -80,6 +77,7 @@ function SDAStream(d) {
       opts['url'] = reqs[i];
       $.ajax(opts);
     }
+    return true;
   };
   
   this.parseApiResponse = function(j) {
@@ -88,16 +86,19 @@ function SDAStream(d) {
       for (var k in j) {
         var single = (j[0] == null);
         var u = (single) ? j : j[k]['result'];
+        u['class'] = u['urlTitleName'].replace("'", '-');
         if (!u['synopsis']) u['synopsis'] = channels[u['urlTitleName']];
         if (u['status'] == 'offline') {
           this.count.off++;
           this.offline.push(u);
-          this.content.offline += s.offline_entry( {channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], synopsis: u['synopsis'] } ) + s.offline_separator;
+          if ($(sel.online).has('.'+u['class']).length) $(sel.online+' .'+u['class']).remove();
+          if (!$(sel.offline).has('.'+u['class']).length) $(sel.offline).append(s.offline_entry( {class: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], synopsis: u['synopsis'] } ));
         }
         else {
           this.count.on++;
           this.online.push(u);
-          this.content.online += s.online_entry( {channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], embed: u['embedTag'], synopsis: u['synopsis'] } ) + s.online_separator;
+          if ($(sel.offline).has('.'+u['class']).length) $(sel.offline+' .'+u['class']).remove();
+          if (!$(sel.online).has('.'+u['class']).length) $(sel.online).append(s.online_entry( {class: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], embed: u['embedTag'], synopsis: u['synopsis'] } ));
         }
         if (single) break;
       }
@@ -107,8 +108,10 @@ function SDAStream(d) {
           $(sel.wrapper).width( ((w.max_entries < this.count.on) ? w.max_entries : this.count.on) * w.entry);
           $(sel.wrapper).css('margin', '0 auto');
         }
-        if ((this.content.online) && (sel.online)) $(sel.online).html( s.online( {content: this.content.online.slice(0, -s.online_separator.length || -1), count: this.count.on} ) );
-        if ((this.content.offline) && (sel.offline)) $(sel.offline).html( s.offline( {content: this.content.offline.slice(0, -s.offline_separator.length || -1), count: this.count.off} ) );
+        if ((this.online.length) && (sel.online)) $(sel.online).css('display', 'block');
+        else $(sel.online).css('display', 'none');
+        if ((this.offline.length) && (sel.offline)) $(sel.offline).css('display', 'block');
+        else $(sel.offline).css('display', 'none');
         if (this.callback) this.callback(this);
       }
     }
@@ -123,5 +126,4 @@ function SDAStream(d) {
   this.setDefaults();
   this.setCenteringValues();
   if (d.auto) this.get();
-
 }
