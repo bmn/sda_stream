@@ -39,9 +39,10 @@ class SDAStream {
       if (
         ($this->expires > time())
         && is_readable($f)
-       ) {
+      ) {
         $this->content['json'] = file_get_contents($f);
-        $this->content['php'] = json_decode($this->content['json'], true);
+        if (!$_GET['callback']) 
+          $this->content['php'] = json_decode($this->content['json'], true);
         return self::return_data($this->content, $format);
        } else {
         unlink($f);

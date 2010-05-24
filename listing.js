@@ -16,8 +16,8 @@ function SDAStream(d) {
     // Skin
     var def;
     def = {
-      online_entry: function(d) { return '<div class="entry '+d['channel']+'"><h3><a href="'+d['url']+'">'+d['username']+'</a></h3>'+d['embed']+'<div class="synopsis">'+d['synopsis']+'</div></div>'; },
-      offline_entry: function(d) { return '<span class="entry '+d['channel']+'"><a href="'+d['url']+'" title="'+d['synopsis']+'">'+d['username']+'</a></span>'; },
+      online_entry: function(d) { return '<div class="entry '+d['classname']+'"><h3><a href="'+d['url']+'">'+d['username']+'</a></h3>'+d['embed']+'<div class="synopsis">'+d['synopsis']+'</div></div>'; },
+      offline_entry: function(d) { return '<span class="entry '+d['classname']+'"><a href="'+d['url']+'" title="'+d['synopsis']+'">'+d['username']+'</a></span>'; }
     }
     for (var i in this.skin) { def[i] = this.skin[i]; }
     this.skin = def;
@@ -25,8 +25,7 @@ function SDAStream(d) {
     def = {
       wrapper: '#wrapper',
       online: '#online',
-      offline: '#offline',
-      hide: '.hide'
+      offline: '#offline'
     }
     for (var i in this.selectors) { def[i] = this.selectors[i]; }
     this.selectors = def;
@@ -72,11 +71,13 @@ function SDAStream(d) {
     }
     var opts = {dataType: 'json', success: jQuery.proxy(this, 'parseApiResponse')};
     if (this.php) opts['jsonpCallback'] = 'sda_stream';
+    if (this.callback.error) opts['error'] = this.callback.error;
     for (var i in reqs) {
       this.requests.started++;
       opts['url'] = reqs[i];
       $.ajax(opts);
     }
+    if (this.callback.loading) this.callback.loading(this);
     return true;
   };
   
@@ -92,13 +93,13 @@ function SDAStream(d) {
           this.count.off++;
           this.offline.push(u);
           if ($(sel.online).has('.'+u['class']).length) $(sel.online+' .'+u['class']).remove();
-          if (!$(sel.offline).has('.'+u['class']).length) $(sel.offline).append(s.offline_entry( {class: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], synopsis: u['synopsis'] } ));
+          if (!$(sel.offline).has('.'+u['class']).length) $(sel.offline).append(s.offline_entry( {classname: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], synopsis: u['synopsis'] } ));
         }
         else {
           this.count.on++;
           this.online.push(u);
           if ($(sel.offline).has('.'+u['class']).length) $(sel.offline+' .'+u['class']).remove();
-          if (!$(sel.online).has('.'+u['class']).length) $(sel.online).append(s.online_entry( {class: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], embed: u['embedTag'], synopsis: u['synopsis'] } ));
+          if (!$(sel.online).has('.'+u['class']).length) $(sel.online).append(s.online_entry( {classname: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], embed: u['embedTag'], synopsis: u['synopsis'] } ));
         }
         if (single) break;
       }
@@ -108,11 +109,9 @@ function SDAStream(d) {
           $(sel.wrapper).width( ((w.max_entries < this.count.on) ? w.max_entries : this.count.on) * w.entry);
           $(sel.wrapper).css('margin', '0 auto');
         }
-        if ((this.online.length) && (sel.online)) $(sel.online).css('display', 'block');
-        else $(sel.online).css('display', 'none');
-        if ((this.offline.length) && (sel.offline)) $(sel.offline).css('display', 'block');
-        else $(sel.offline).css('display', 'none');
-        if (this.callback) this.callback(this);
+        $(sel.online).css('display', ((this.online.length) && (sel.online)) ? 'block' : 'none');
+        $(sel.offline).css('display', ((this.offline.length) && (sel.offline)) ? 'block' : 'none');
+        if (this.callback.success) this.callback.success(this);
       }
     }
   };
@@ -120,7 +119,7 @@ function SDAStream(d) {
   d = d || {}
   d.auto = (d.auto != false);
   this.php = d.php;
-  this.callback = d.callback;
+  this.callback = {success: d.success || d.callback, loading: d.loading, error: d.error};
   var vars = ['channels', 'key', 'skin', 'selectors'];
   for (var i in vars) { this[vars[i]] = d[vars[i]] || window[vars[i]] }
   this.setDefaults();
