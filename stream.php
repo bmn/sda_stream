@@ -13,11 +13,12 @@
 
 class SDAStream {
 
-  private $key, $cache;
+  private $key, $cache, $sort;
   private $content = array();
   private $channels = array();
   private $timer = 1;
   private $expires = 0;
+  private $sort_text = array('user' => "['user']['userName']", 'channel' => "['user']['title']");
   
   public function SDAStream($d = array()) {
     $this->content = array();
@@ -27,11 +28,12 @@ class SDAStream {
     $s = DIRECTORY_SEPARATOR;
     $c = (is_string($d['cache'])) ? $d['cache'] : 'sda_stream';
     $this->cache = dirname(__FILE__)."{$s}cache{$s}{$c}.api.json";
+    $this->sort = $d['sort'];
   }
   
   public function get($format = 'php') {
     // Return the content if it's already been made in this pageload
-    if ($this->content[$format]) return self::return_data($this->content, $format);
+    if ($this->content[$format]) return $this->return_data($format);
     // Check for a cached API response and return it if it's still valid
     $f = $this->cache;
     if (file_exists($f)) {
@@ -41,10 +43,10 @@ class SDAStream {
         && is_readable($f)
       ) {
         $this->content['json'] = file_get_contents($f);
-        if (!$_GET['callback']) 
+        if (!$_GET['callback'])
           $this->content['php'] = json_decode($this->content['json'], true);
-        return self::return_data($this->content, $format);
-       } else {
+        return $this->return_data($format);
+      } else {
         unlink($f);
       }
     }
@@ -104,28 +106,41 @@ class SDAStream {
         }
       }
     }
+    $this->sort();
     $this->content['json'] = json_encode($this->content['php']);
     // Save the JSON to a cache file
     if (!is_dir(dirname($f))) { mkdir(dirname($f), true); }
     file_put_contents($f, $this->content['json']);
     $this->expires = (time() + $this->timer);
     // Return the data
-    return self::return_data($this->content, $format);
+    return $this->return_data($format);
   }
   
-  private static function return_data($data, $format) {
+  private function return_data($format) {
     // Return JSONP
-    if ($_GET['callback']) { $data['json'] = $_GET['callback'].'('.$data['json'].');'; }
+    if ($_GET['callback']) { return $_GET['callback'].'('.$this->content['json'].');'; }
     // Return online/offline (PHP only)
     if ($format == 'php') {
       $out = array( array(), array() );
-      foreach ($data['php'] as $a) {
+      foreach ($this->content['php'] as $a) {
         $out[ ($a['result']['status'] == 'offline') ? 1 : 0 ][] = $a['result'];
       }
       return $out;
     }
     // Other output
-    return $data[$format];
+    return $this->content[$format];
+  }
+  
+  private function sort() {
+    if (!$this->sort) return false;
+    $f = $this->sort_text[$this->sort];
+    if ($f) { $sort = create_function('$a, $b', 'return $a["result"]'.$f.' - $b["result"]'.$f.';'); }
+    elseif ($this->sort == 'last') {
+      $f = "['lastStreamedAt']";
+      $sort = create_function('$a, $b', '$ad = strtotime($a["result"]'.$f.'); $bd = strtotime($b["result"]'.$f.'); return $bd - $ad;');
+    }
+    else return false;
+    usort($this->content['php'], $sort);
   }
   
   private static function http($url) {

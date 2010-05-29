@@ -93,13 +93,21 @@ function SDAStream(d) {
           this.count.off++;
           this.offline.push(u);
           if ($(sel.online).has('.'+u['class']).length) $(sel.online+' .'+u['class']).remove();
-          if (!$(sel.offline).has('.'+u['class']).length) $(sel.offline).append(s.offline_entry( {classname: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], synopsis: u['synopsis'] } ));
+          if (!$(sel.offline).has('.'+u['class']).length) {
+            var content = s.offline_entry( {classname: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], synopsis: u['synopsis'] } );
+            if (this.add == 'prepend') $(sel.offline).prepend(content);
+            else $(sel.offline).append(content);
+          }
         }
         else {
           this.count.on++;
           this.online.push(u);
           if ($(sel.offline).has('.'+u['class']).length) $(sel.offline+' .'+u['class']).remove();
-          if (!$(sel.online).has('.'+u['class']).length) $(sel.online).append(s.online_entry( {classname: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], embed: u['embedTag'], synopsis: u['synopsis'] } ));
+          if (!$(sel.online).has('.'+u['class']).length) {
+            var content = s.online_entry( {classname: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], embed: u['embedTag'], synopsis: u['synopsis'] } );
+            if (this.add == 'prepend') $(sel.online).prepend(content);
+            else $(sel.online).append(content);
+          }
         }
         if (single) break;
       }
@@ -116,11 +124,10 @@ function SDAStream(d) {
     }
   };
   
-  d = d || {}
+  var d = d || {}
   d.auto = (d.auto != false);
-  this.php = d.php;
   this.callback = {success: d.success || d.callback, loading: d.loading, error: d.error};
-  var vars = ['channels', 'key', 'skin', 'selectors'];
+  var vars = ['channels', 'key', 'skin', 'selectors', 'php', 'sort', 'add'];
   for (var i in vars) { this[vars[i]] = d[vars[i]] || window[vars[i]] }
   this.setDefaults();
   this.setCenteringValues();
