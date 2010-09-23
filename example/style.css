@@ -17,6 +17,10 @@ div.synopsis {
   margin-top: 3px;
   height: 30px;
 }
+div.entry a.toggle {
+  float: right;
+  margin-right: 10px;
+}
 #offline {
   width: 900px;
   margin: 0 auto 35px auto;
@@ -68,4 +72,10 @@ pre {
   bottom: 0;
   right: 0;
   font-weight: bold;
+}
+#toggle {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: 20px;
 }

@@ -13,7 +13,7 @@
 
 class SDAStream {
 
-  private $key, $cache, $sort;
+  private $key, $cache, $sort, $ignore, $callback;
   private $content = array();
   private $channels = array();
   private $timer = 1;
@@ -26,9 +26,10 @@ class SDAStream {
     $this->key = $d['key'];
     $this->timer = ((($d['timer']) ? $d['timer'] : $this->timer) * 60);
     $s = DIRECTORY_SEPARATOR;
-    $c = (is_string($d['cache'])) ? $d['cache'] : 'sda_stream';
-    $this->cache = dirname(__FILE__)."{$s}cache{$s}{$c}.api.json";
+    $this->callback = (is_string($d['cache'])) ? $d['cache'] : 'sda_stream';
+    $this->cache = dirname(__FILE__)."{$s}cache{$s}{$this->callback}.api.json";
     $this->sort = $d['sort'];
+    if ($d['ignore']) $this->ignore = (is_string($d['ignore']) ? array($d['ignore']) : $d['ignore']);
   }
   
   public function get($format = 'php') {
@@ -37,12 +38,12 @@ class SDAStream {
     // Check for a cached API response and return it if it's still valid
     $f = $this->cache;
     if (file_exists($f)) {
-      $this->expires = (filemtime($f) + $this->timer);
+      $this->expires = (filemtime($f) + $this->timer - 1);
       if (
         ($this->expires > time())
         && is_readable($f)
       ) {
-        $this->content['json'] = file_get_contents($f);
+        $this->content['json'] = substr(file_get_contents($f), strlen($this->callback) + 1, -2);
         if (!$_GET['callback'])
           $this->content['php'] = json_decode($this->content['json'], true);
         return $this->return_data($format);
@@ -97,9 +98,11 @@ class SDAStream {
       }
       $c = $c['results'];
       if ((count($strs) == 1) && ($c['id'])) {
+        $c = self::offline_if_ignored($c);
         $this->content['php'] = array_merge($c, array('synopsis' => $this->channels[$c['urlTitleName']]));
       } else {
         $c = ($c['id']) ? array(array('result' => $c)) : $c;
+        $c = self::offline_if_ignored($c);
         foreach ($c as $r) {
           $r['result']['synopsis'] = $this->channels[$r['result']['urlTitleName']];
           $this->content['php'][] = $r;
@@ -110,7 +113,7 @@ class SDAStream {
     $this->content['json'] = json_encode($this->content['php']);
     // Save the JSON to a cache file
     if (!is_dir(dirname($f))) { mkdir(dirname($f), true); }
-    file_put_contents($f, $this->content['json']);
+    file_put_contents($f, $this->callback.'('.$this->content['json'].');');
     $this->expires = (time() + $this->timer);
     // Return the data
     return $this->return_data($format);
@@ -159,6 +162,11 @@ class SDAStream {
     if ($this->expires == 0) $this->get('php');
     header("Expires: ".date('r', $this->expires));
     header("Last-Modified: ".date('r', time()));
+  }
+  
+  // Ustream doesn't currently provide status messages in its API.
+  private static function offline_if_ignored($c) {
+    return $c;
   }
 
 }
