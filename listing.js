@@ -43,7 +43,7 @@ function SDAStream(d) {
     this.width = {
       entry: 350,
       window: (self.innerHeight) ? self.innerWidth : (document.documentElement && document.documentElement.clientHeight) ? document.documentElement.clientWidth : (document.body) ? document.body.clientWidth : false
-    }
+    };
     this.width.max_entries = Math.floor(this.width.window / this.width.entry);
     return this.width;
   };
@@ -114,7 +114,7 @@ function SDAStream(d) {
       }
       this.requests.done++;
       if (this.requests.done == this.requests.started) {
-        if (sel.wrapper) {
+        if ((sel.wrapper) && (this.resize)) {
           $(sel.wrapper).width( ((w.max_entries < this.count.on) ? w.max_entries : this.count.on) * w.entry);
           $(sel.wrapper).css('margin', '0 auto');
         }
@@ -127,6 +127,7 @@ function SDAStream(d) {
   
   var d = d || {}
   d.auto = (d.auto != false);
+  this.resize = (d.resize != false);
   this.callback = {success: d.success || d.callback, loading: d.loading, error: d.error};
   var vars = ['channels', 'key', 'skin', 'selectors', 'php', 'sort', 'add', 'supercache'];
   for (var i in vars) { this[vars[i]] = d[vars[i]] || window[vars[i]] }
