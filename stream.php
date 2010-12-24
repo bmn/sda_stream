@@ -104,7 +104,7 @@ class SDAStream {
         $c = ($c['id']) ? array(array('result' => $c)) : $c;
         $c = self::offline_if_ignored($c);
         foreach ($c as $r) {
-          $r['result']['synopsis'] = $this->channels[$r['result']['urlTitleName']];
+          $r['result']['synopsis'] = $this->channels[$r['uid']];
           $this->content['php'][] = $r;
         }
       }
