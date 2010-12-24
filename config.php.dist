@@ -22,3 +22,18 @@ $key = 'ustream_api_key_goes_here';
   Start of the cache file's filename
 */
 // $cache = 'sda_stream';
+
+/*
+  List of fields to include in the JSON code.
+  Includes all fields if set to false.
+*/
+/*
+$fields = array(
+  'user' => array(
+    'userName'
+  ),
+  'status',
+  'lastStreamedAt',
+  'embedTag',
+);
+*/

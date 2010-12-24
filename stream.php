@@ -16,6 +16,7 @@ class SDAStream {
   private $key, $cache, $sort, $ignore, $callback;
   private $content = array();
   private $channels = array();
+  private $fields = false;
   private $timer = 1;
   private $expires = 0;
   private $sort_text = array('user' => "['user']['userName']", 'channel' => "['user']['title']");
@@ -30,6 +31,7 @@ class SDAStream {
     $this->cache = dirname(__FILE__)."{$s}cache{$s}{$this->callback}.api.json";
     $this->sort = $d['sort'];
     if ($d['ignore']) $this->ignore = (is_string($d['ignore']) ? array($d['ignore']) : $d['ignore']);
+    if ($d['fields']) $this->fields = $d['fields'];
   }
   
   public function get($format = 'php') {
@@ -98,12 +100,12 @@ class SDAStream {
       }
       $c = $c['results'];
       if ((count($strs) == 1) && ($c['id'])) {
-        $c = self::offline_if_ignored($c);
+        $c = self::filter_fields($c);
         $this->content['php'] = array_merge($c, array('synopsis' => $this->channels[$c['urlTitleName']]));
       } else {
         $c = ($c['id']) ? array(array('result' => $c)) : $c;
-        $c = self::offline_if_ignored($c);
         foreach ($c as $r) {
+          $r = self::filter_fields($r);
           $r['result']['synopsis'] = $this->channels[$r['uid']];
           $this->content['php'][] = $r;
         }
@@ -164,9 +166,20 @@ class SDAStream {
     header("Last-Modified: ".date('r', time()));
   }
   
-  // Ustream doesn't currently provide status messages in its API.
-  private static function offline_if_ignored($c) {
-    return $c;
+  private function filter_fields($c) {
+    if (!$this->fields) return $c;
+    $n = array('uid' => $c['uid']);
+    $n['result'] = self::loop_fields($c['result'], $this->fields);
+    return $n;
+  }
+  
+  private static function loop_fields($c, $f) {
+    $out = array();
+    foreach ($f as $k => $e) {
+      if (is_array($e)) $out[$k] = self::loop_fields($c[$k], $e);
+      else $out[$e] = $c[$e];
+    }
+    return $out;
   }
 
 }
@@ -180,7 +193,8 @@ if (reset(get_included_files()) == __FILE__) {
     'channels'  => $channels,
     'key'       => $key,
     'timer'     => $timer,
-    'cache'     => $cache
+    'cache'     => $cache,
+    'fields'    => $fields,
   ) );
   $stream->headers();
   echo $stream->get('json');
