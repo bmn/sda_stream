@@ -13,7 +13,9 @@
 
 class SDAStream {
 
-  private $key, $cache, $sort, $ignore, $callback;
+  public $errors = array();
+
+  private $key, $cache, $sort, $ignore, $callback, $query;
   private $content = array();
   private $channels = array();
   private $fields = false;
@@ -23,7 +25,11 @@ class SDAStream {
   
   public function SDAStream($d = array()) {
     $this->content = array();
-    if ($d['channels']) $this->channels = $d['channels'];
+    if ($d['channels']) {
+      if (!is_array($d['channels'][0])) {
+        foreach ($d['channels'] as $c) $this->channels[$c] = '';
+      } else $this->channels = $d['channels'];
+    }
     $this->key = $d['key'];
     $this->timer = ((($d['timer']) ? $d['timer'] : $this->timer) * 60);
     $s = DIRECTORY_SEPARATOR;
@@ -32,6 +38,7 @@ class SDAStream {
     $this->sort = $d['sort'];
     if ($d['ignore']) $this->ignore = (is_string($d['ignore']) ? array($d['ignore']) : $d['ignore']);
     if ($d['fields']) $this->fields = $d['fields'];
+    $this->query = ($d['query']) ? $d['query'] : 'getInfo';
   }
   
   public function get($format = 'php') {
@@ -54,15 +61,88 @@ class SDAStream {
       }
     }
     // Else request the data from the API
-    $reqs = $strs = $errors = $responses = array();
+    $chns = $strs = $responses = array();
     $ct = count($this->channels);
     if ($ct == 0) { break; }
     for ($i = 0; $i <= $ct; $i += 10) {
-      $strs[] = 'http://api.ustream.tv/json/channel/' . implode(';', array_keys(array_slice($this->channels, $i, 10, true))) . '/getInfo?key='.$this->key;
+      $chns[] = array_keys(array_slice($this->channels, $i, 10, true));
+      $strs[] = 'http://api.ustream.tv/json/channel/' . implode(';', end($chns)) .'/'.$this->query.'?key='.$this->key;
     }
     if (count($strs) == 0) { return false; }
+    // Get the responses
+    $responses = self::query_api($strs);
+    // Parse the JSON responses into a PHP array,
+    // and convert back to a single JSON string
+    foreach ($responses as $k => $c) {
+      if ($c['error'] == 'ERR102') {
+        $new_str = array();
+        foreach ($chns[$k] as $l => $ch)  $new_str[$l] = "http://api.ustream.tv/json/channel/{$ch}/{$this->query}?key={$this->key}";
+        $new_resp = self::query_api($new_str);
+        $c = array('results' => array());
+        foreach ($new_resp as $l => $r) {
+          if ($r['error'] == 'ERR102') $this->errors[] = $chns[$k][$l];
+          else $c['results'][] = array('uid' => $chns[$k][$l], 'result' => $r['results']);
+        }
+        if (count($c['results']) == 0) continue;
+      }
+      $num = isset($c['results'][0]);
+      $c = $c['results'];
+      if ((count($strs) == 1) && ($num)) {
+        $c = self::filter_fields($c);
+        $this->content['php'] = ($this->query) ? $c : array_merge($c, array('synopsis' => $this->channels[$c['urlTitleName']]));
+      } else {
+        $c = (!$num) ? array(array('result' => $c)) : $c;
+        foreach ($c as $r) {
+          $r = self::filter_fields($r);
+          if (!$this->query) $r['result']['synopsis'] = $this->channels[$r['uid']];
+          $this->content['php'][] = $r;
+        }
+      }
+    }
+    $this->sort();
+    $this->content['json'] = json_encode($this->content['php']);
+    // Save the JSON to a cache file
+    if (!is_dir(dirname($f))) { mkdir(dirname($f), true); }
+    file_put_contents($f, $this->callback.'('.$this->content['json'].');');
+    $this->expires = (time() + $this->timer);
+    // Return the data
+    return $this->return_data($format);
+  }
+  
+  private function return_data($format) {
+    // Return JSONP
+    if ($_GET['callback']) { return $_GET['callback'].'('.$this->content['json'].');'; }
+    // Return online/offline (PHP only)
+    if ($format == 'php') {
+      $out = array( array(), array() );
+      foreach ($this->content['php'] as $a) {
+        if ($this->query == 'getInfo')
+          $out[ ($a['result']['status'] == 'offline') ? 1 : 0 ][] = $a['result'];
+        elseif ($this->query == 'getValueOf/status')
+          $out[ ($a['result'] == 'offline') ? 1 : 0 ][] = $a;
+      }
+      return $out;
+    }
+    // Other output
+    return $this->content[$format];
+  }
+  
+  private function sort() {
+    if (!$this->sort) return false;
+    $f = $this->sort_text[$this->sort];
+    if ($f) { $sort = create_function('$a, $b', 'return $a["result"]'.$f.' - $b["result"]'.$f.';'); }
+    elseif ($this->sort == 'last') {
+      $f = "['lastStreamedAt']";
+      $sort = create_function('$a, $b', '$ad = strtotime($a["result"]'.$f.'); $bd = strtotime($b["result"]'.$f.'); return $bd - $ad;');
+    }
+    else return false;
+    usort($this->content['php'], $sort);
+  }
+  
+  private static function query_api($strs) {
     // Make requests using curl if it's available
     if (function_exists('curl_multi_init')) {
+      $reqs = array();
       $req = curl_multi_init();
       foreach ($strs as $k => $v) {
         $reqs[$k] = curl_init($v);
@@ -91,61 +171,7 @@ class SDAStream {
     else foreach ($strs as $v) { 
       $responses[] = json_decode(self::http($v), true);
     }
-    // Parse the JSON responses into a PHP array,
-    // and convert back to a single JSON string
-    foreach ($responses as $c) {
-      if ($c['error']) {
-        $errors[] = array('code' => $c['error'], 'msg' => $c['msg']);
-        continue;
-      }
-      $c = $c['results'];
-      if ((count($strs) == 1) && ($c['id'])) {
-        $c = self::filter_fields($c);
-        $this->content['php'] = array_merge($c, array('synopsis' => $this->channels[$c['urlTitleName']]));
-      } else {
-        $c = ($c['id']) ? array(array('result' => $c)) : $c;
-        foreach ($c as $r) {
-          $r = self::filter_fields($r);
-          $r['result']['synopsis'] = $this->channels[$r['uid']];
-          $this->content['php'][] = $r;
-        }
-      }
-    }
-    $this->sort();
-    $this->content['json'] = json_encode($this->content['php']);
-    // Save the JSON to a cache file
-    if (!is_dir(dirname($f))) { mkdir(dirname($f), true); }
-    file_put_contents($f, $this->callback.'('.$this->content['json'].');');
-    $this->expires = (time() + $this->timer);
-    // Return the data
-    return $this->return_data($format);
-  }
-  
-  private function return_data($format) {
-    // Return JSONP
-    if ($_GET['callback']) { return $_GET['callback'].'('.$this->content['json'].');'; }
-    // Return online/offline (PHP only)
-    if ($format == 'php') {
-      $out = array( array(), array() );
-      foreach ($this->content['php'] as $a) {
-        $out[ ($a['result']['status'] == 'offline') ? 1 : 0 ][] = $a['result'];
-      }
-      return $out;
-    }
-    // Other output
-    return $this->content[$format];
-  }
-  
-  private function sort() {
-    if (!$this->sort) return false;
-    $f = $this->sort_text[$this->sort];
-    if ($f) { $sort = create_function('$a, $b', 'return $a["result"]'.$f.' - $b["result"]'.$f.';'); }
-    elseif ($this->sort == 'last') {
-      $f = "['lastStreamedAt']";
-      $sort = create_function('$a, $b', '$ad = strtotime($a["result"]'.$f.'); $bd = strtotime($b["result"]'.$f.'); return $bd - $ad;');
-    }
-    else return false;
-    usort($this->content['php'], $sort);
+    return $responses;
   }
   
   private static function http($url) {
@@ -195,6 +221,7 @@ if (reset(get_included_files()) == __FILE__) {
     'timer'     => $timer,
     'cache'     => $cache,
     'fields'    => $fields,
+    'query'     => $query,
   ) );
   $stream->headers();
   echo $stream->get('json');

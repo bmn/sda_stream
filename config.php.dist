@@ -37,3 +37,9 @@ $fields = array(
   'embedTag',
 );
 */
+
+/*
+  The query to be sent to the API.
+  You can use this when you are using the PHP library as a proxy.
+*/
+//$query = 'getInfo';
