@@ -41,7 +41,7 @@ function SDAStream(d) {
   // Nice centered goodness
   this.setCenteringValues = function() {
     this.width = {
-      entry: 350,
+      entry: this.entry_width,
       window: (self.innerHeight) ? self.innerWidth : (document.documentElement && document.documentElement.clientHeight) ? document.documentElement.clientWidth : (document.body) ? document.body.clientWidth : false
     };
     this.width.max_entries = Math.floor(this.width.window / this.width.entry);
@@ -58,11 +58,11 @@ function SDAStream(d) {
     this.offline = [];
     this.count = { on: 0, off: 0 };
     this.requests = { started: 0, done: 0 };
-    var opts = {dataType: 'json', success: jQuery.proxy(this, 'parseApiResponse')};
-    if (this.php || this.supercache) opts['jsonpCallback'] = 'sda_stream';
+    var opts = {dataType: 'jsonp', cache: true, success: jQuery.proxy(this, 'parseApiResponse')};
+    if (this.php || this.supercache) opts['callback'] = 'sda_stream';
     if (this.callback.error) opts['error'] = this.callback.error;
     if (this.php) { reqs[0] = ((this.php == true) ? '' : this.php+'/') +'stream.php?callback=?'; }
-    else if (this.supercache) { reqs[0] = ((this.supercache == true) ? 'cache' : this.supercache) +'/'+opts['jsonpCallback']+'.api.json?callback=?'; }
+    else if (this.supercache) { reqs[0] = ((this.supercache == true) ? 'cache' : this.supercache) +'/'+opts['callback']+'.api.json?callback=?'; }
     else {
       for (var i in this.channels) {
         c++;
@@ -76,7 +76,7 @@ function SDAStream(d) {
     for (var i in reqs) {
       this.requests.started++;
       opts['url'] = reqs[i];
-      $.ajax(opts);
+      $.jsonp(opts);
     }
     if (this.callback.loading) this.callback.loading(this);
     return true;
@@ -132,6 +132,7 @@ function SDAStream(d) {
   var vars = ['channels', 'key', 'skin', 'selectors', 'php', 'sort', 'add', 'supercache'];
   for (var i in vars) { this[vars[i]] = d[vars[i]] || window[vars[i]] }
   this.setDefaults();
+  this.entry_width = d.width || 320;
   this.setCenteringValues();
   if (d.auto) this.get();
 }
