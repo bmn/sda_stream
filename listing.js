@@ -16,25 +16,31 @@ function SDAStream(d) {
     // Skin
     var def;
     def = {
-      online_entry: function(d) { return '<div class="entry '+d['classname']+'"><h3><a href="'+d['url']+'">'+d['username']+'</a></h3>'+d['embed']+'<div class="synopsis">'+d['synopsis']+'</div></div>'; },
-      offline_entry: function(d) { return '<span class="entry '+d['classname']+'"><a href="'+d['url']+'" title="'+d['synopsis']+'">'+d['username']+'</a></span>'; }
+      online_entry: function(d) { return '<div class="entry '+d.classname+'"><h3><a href="'+d.url+'">'+d.username+'</a></h3>'+d.embed+'<div class="synopsis">'+d.synopsis+'</div></div>'; },
+      offline_entry: function(d) { return '<span class="entry '+d.classname+'"><a href="'+d.url+'" title="'+d.synopsis+'">'+d.username+'</a></span>'; }
+    };
+    for (var i in this.skin) {
+      if (this.skin.hasOwnProperty(i)) { def[i] = this.skin[i]; }
     }
-    for (var i in this.skin) { def[i] = this.skin[i]; }
     this.skin = def;
     // Selectors
     def = {
       wrapper: '#wrapper',
       online: '#online',
       offline: '#offline'
+    };
+    for (i in this.selectors) {
+      if (this.selectors.hasOwnProperty(i)) { def[i] = this.selectors[i]; }
     }
-    for (var i in this.selectors) { def[i] = this.selectors[i]; }
     this.selectors = def;
   };
 
   // Get the size of a hash
   Object.size = function(obj) {
     var size = 0, key;
-    for (key in obj) { if (obj.hasOwnProperty(key)) size++; }
+    for (key in obj) {
+      if (obj.hasOwnProperty(key)) { size++; }
+    }
     return size;
   };
 
@@ -52,65 +58,69 @@ function SDAStream(d) {
   this.get = function() {
     var req = '';
     var reqs = [];
+    var i = 0;
     var c = 0;
     this.content = { online: '', offline: '' };
     this.online = [];
     this.offline = [];
     this.count = { on: 0, off: 0 };
     this.requests = { started: 0, done: 0 };
-    var opts = {dataType: 'json', success: jQuery.proxy(this, 'parseApiResponse')};
-    if (this.php || this.supercache) opts['jsonCallback'] = 'sda_stream';
-    if (this.callback.error) opts['error'] = this.callback.error;
-    if (this.php) { reqs[0] = ((this.php == true) ? '' : this.php+'/') +'stream.php?callback=?'; }
-    else if (this.supercache) { reqs[0] = ((this.supercache == true) ? 'cache' : this.supercache) +'/'+opts['jsonCallback']+'.api.json?callback=?'; }
+    var opts = {dataType: 'jsonp', success: jQuery.proxy(this, 'parseApiResponse')};
+    if (this.php || this.supercache) { opts.jsonpCallback = 'sda_stream'; }
+    if (this.callback.error) { opts.error = this.callback.error; }
+    if (this.php) { reqs[0] = ((this.php === true) ? '' : this.php+'/') +'stream.php'; }
+    else if (this.supercache) { reqs[0] = ((this.supercache === true) ? 'cache' : this.supercache) +'/'+opts.jsonpCallback+'.api.json'; }
     else {
-      for (var i in this.channels) {
-        c++;
-        req += i+';';
-        if (((c % 10) == 0) || (c == (Object.size(channels)))) {
-          reqs.push('http://api.ustream.tv/json/channel/'+req.slice(0, -1)+'/getInfo?key='+key+'&callback=?');
-          req = '';
+      for (i in this.channels) {
+        if (this.channels.hasOwnProperty(i)) {
+          c++;
+          req += i+';';
+          if (((c % 10) === 0) || (c == (Object.size(channels)))) {
+            reqs.push('http://api.ustream.tv/json/channel/'+req.slice(0, -1)+'/getInfo?key='+key+'&callback=?');
+            req = '';
+          }
         }
       }
     }
-    for (var i in reqs) {
+    for (i = 0; i < reqs.length; i++) {
       this.requests.started++;
-      opts['url'] = reqs[i];
+      opts.url = reqs[i];
       $.ajax(opts);
     }
-    if (this.callback.loading) this.callback.loading(this);
+    if (this.callback.loading) { this.callback.loading(this); }
     return true;
   };
   
   this.parseApiResponse = function(j) {
     if (j) {
       var sel = this.selectors, w = this.width, s = this.skin;
-      for (var k in j) {
-        var single = (j[0] == null);
-        var u = (single) ? j : j[k]['result'];
-        u['class'] = u['urlTitleName'].replace("'", '-');
-        if (!u['synopsis']) u['synopsis'] = channels[u['urlTitleName']];
-        if (u['status'] == 'offline') {
+      var content = '';
+      for (var k = 0; k < j.length; k++) {
+        var single = (j[0] === null);
+        var u = (single) ? j : j[k].result;
+        u['class'] = u.urlTitleName.replace("'", '-');
+        if (!u.synopsis) { u.synopsis = channels[u.urlTitleName]; }
+        if (u.status == 'offline') {
           this.count.off++;
           this.offline.push(u);
-          if ($(sel.online).has('.'+u['class']).length) $(sel.online+' .'+u['class']).remove();
+          if ($(sel.online).has('.'+u['class']).length) { $(sel.online+' .'+u['class']).remove(); }
           if (!$(sel.offline).has('.'+u['class']).length) {
-            var content = s.offline_entry( {classname: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], synopsis: u['synopsis'] } );
-            if (this.add == 'prepend') $(sel.offline).prepend(content);
-            else $(sel.offline).append(content);
+            content = s.offline_entry( {classname: u['class'], channel: u.urlTitleName, url: u.url, username: u.user.userName, synopsis: u.synopsis } );
+            if (this.add == 'prepend') { $(sel.offline).prepend(content); }
+            else { $(sel.offline).append(content); }
           }
         }
         else {
           this.count.on++;
           this.online.push(u);
-          if ($(sel.offline).has('.'+u['class']).length) $(sel.offline+' .'+u['class']).remove();
+          if ($(sel.offline).has('.'+u['class']).length) { $(sel.offline+' .'+u['class']).remove(); }
           if (!$(sel.online).has('.'+u['class']).length) {
-            var content = s.online_entry( {classname: u['class'], channel: u['urlTitleName'], url: u['url'], username: u['user']['userName'], embed: u['embedTag'], synopsis: u['synopsis'] } );
-            if (this.add == 'prepend') $(sel.online).prepend(content);
-            else $(sel.online).append(content);
+            content = s.online_entry( {classname: u['class'], channel: u.urlTitleName, url: u.url, username: u.user.userName, embed: u.embedTag, synopsis: u.synopsis } );
+            if (this.add == 'prepend') { $(sel.online).prepend(content); }
+            else { $(sel.online).append(content); }
           }
         }
-        if (single) break;
+        if (single) { break; }
       }
       this.requests.done++;
       if (this.requests.done == this.requests.started) {
@@ -120,19 +130,21 @@ function SDAStream(d) {
         }
         $(sel.online).css('display', ((this.online.length) && (sel.online)) ? 'block' : 'none');
         $(sel.offline).css('display', ((this.offline.length) && (sel.offline)) ? 'block' : 'none');
-        if (this.callback.success) this.callback.success(this);
+        if (this.callback.success) { this.callback.success(this); }
       }
     }
   };
   
-  var d = d || {}
+  d = d || {};
   d.auto = (d.auto != false);
   this.resize = (d.resize != false);
   this.callback = {success: d.success || d.callback, loading: d.loading, error: d.error};
   var vars = ['channels', 'key', 'skin', 'selectors', 'php', 'sort', 'add', 'supercache'];
-  for (var i in vars) { this[vars[i]] = d[vars[i]] || window[vars[i]] }
+  for (var i in vars) {
+    if (vars.hasOwnProperty(i)) { this[vars[i]] = d[vars[i]] || window[vars[i]]; }
+  }
   this.setDefaults();
   this.entry_width = d.width || 340;
   this.setCenteringValues();
-  if (d.auto) this.get();
+  if (d.auto) { this.get(); }
 }
