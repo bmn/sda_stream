@@ -26,7 +26,7 @@ class SDAStream {
   public function SDAStream($d = array()) {
     $this->content = array();
     if ($d['channels']) {
-      if (!is_array($d['channels'][0])) {
+      if (is_int(key($d['channels']))) {
         foreach ($d['channels'] as $c) $this->channels[$c] = '';
       } else $this->channels = $d['channels'];
     }
@@ -94,7 +94,7 @@ class SDAStream {
         $c = (!$num) ? array(array('result' => $c)) : $c;
         foreach ($c as $r) {
           $r = self::filter_fields($r);
-          if (!$this->query) $r['result']['synopsis'] = $this->channels[$r['uid']];
+          if (($r['uid']) && (is_array($r['result']))) $r['result']['synopsis'] = $this->channels[$r['uid']];
           $this->content['php'][] = $r;
         }
       }
