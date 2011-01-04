@@ -58,11 +58,11 @@ function SDAStream(d) {
     this.offline = [];
     this.count = { on: 0, off: 0 };
     this.requests = { started: 0, done: 0 };
-    var opts = {dataType: 'jsonp', cache: true, success: jQuery.proxy(this, 'parseApiResponse')};
-    if (this.php || this.supercache) opts['callback'] = 'sda_stream';
+    var opts = {dataType: 'json', success: jQuery.proxy(this, 'parseApiResponse')};
+    if (this.php || this.supercache) opts['jsonCallback'] = 'sda_stream';
     if (this.callback.error) opts['error'] = this.callback.error;
     if (this.php) { reqs[0] = ((this.php == true) ? '' : this.php+'/') +'stream.php?callback=?'; }
-    else if (this.supercache) { reqs[0] = ((this.supercache == true) ? 'cache' : this.supercache) +'/'+opts['callback']+'.api.json?callback=?'; }
+    else if (this.supercache) { reqs[0] = ((this.supercache == true) ? 'cache' : this.supercache) +'/'+opts['jsonCallback']+'.api.json?callback=?'; }
     else {
       for (var i in this.channels) {
         c++;
@@ -76,7 +76,7 @@ function SDAStream(d) {
     for (var i in reqs) {
       this.requests.started++;
       opts['url'] = reqs[i];
-      $.jsonp(opts);
+      $.ajax(opts);
     }
     if (this.callback.loading) this.callback.loading(this);
     return true;
