@@ -132,7 +132,7 @@ function SDAStream(d) {
   var vars = ['channels', 'key', 'skin', 'selectors', 'php', 'sort', 'add', 'supercache'];
   for (var i in vars) { this[vars[i]] = d[vars[i]] || window[vars[i]] }
   this.setDefaults();
-  this.entry_width = d.width || 320;
+  this.entry_width = d.width || 340;
   this.setCenteringValues();
   if (d.auto) this.get();
 }
