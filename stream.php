@@ -74,6 +74,7 @@ class SDAStream {
     // Parse the JSON responses into a PHP array,
     // and convert back to a single JSON string
     foreach ($responses as $k => $c) {
+      //if ($_GET['debug']) var_dump($c);
       if ($c['error'] == 'ERR102') {
         $new_str = array();
         foreach ($chns[$k] as $l => $ch)  $new_str[$l] = "http://api.ustream.tv/json/channel/{$ch}/{$this->query}?key={$this->key}";
@@ -85,13 +86,15 @@ class SDAStream {
         }
         if (count($c['results']) == 0) continue;
       }
-      $num = isset($c['results'][0]);
+      $num = is_int(key($c['results']));
       $c = $c['results'];
-      if ((count($strs) == 1) && ($num)) {
-        $c = self::filter_fields($c);
-        $this->content['php'] = ($this->query) ? $c : array_merge($c, array('synopsis' => $this->channels[$c['urlTitleName']]));
+      if (!$num) {
+        //var_dump($c);
+        //$c = self::filter_fields($c);
+        $c = array('result' => $c);;
+        $this->content['php'][] = array('result' => array_merge($c, array('synopsis' => $this->channels[$c['result']['urlTitleName']])));
+        //var_dump(end($this->content['php']));
       } else {
-        $c = (!$num) ? array(array('result' => $c)) : $c;
         foreach ($c as $r) {
           $r = self::filter_fields($r);
           if (($r['uid']) && (is_array($r['result']))) $r['result']['synopsis'] = $this->channels[$r['uid']];
@@ -228,5 +231,5 @@ if (reset(get_included_files()) == __FILE__) {
     print 'Errors:<br/>';
     var_dump($stream->errors);
   }
-  else echo $stream->get('json');
+  elseif (!$_GET['debug']) echo $stream->get('json');
 }
