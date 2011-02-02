@@ -64,7 +64,7 @@ class SDAStream {
     $chns = $strs = $responses = array();
     $ct = count($this->channels);
     if ($ct == 0) { break; }
-    for ($i = 0; $i <= $ct; $i += 10) {
+    for ($i = 0; $i < $ct; $i += 10) {
       $chns[] = array_keys(array_slice($this->channels, $i, 10, true));
       $strs[] = 'http://api.ustream.tv/json/channel/' . implode(';', end($chns)) .'/'.$this->query.'?key='.$this->key;
     }
@@ -227,7 +227,7 @@ if (reset(get_included_files()) == __FILE__) {
     'query'     => $query,
   ) );
   $stream->headers();
-  if ($_GET['debug'] and count($stream->errors)) {
+  if ($_GET['debugsbunny'] and count($stream->errors)) {
     print 'Errors:<br/>';
     var_dump($stream->errors);
   }
