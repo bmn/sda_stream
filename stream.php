@@ -46,7 +46,7 @@ class SDAStream {
     if ($this->content[$format]) return $this->return_data($format);
     // Check for a cached API response and return it if it's still valid
     $f = $this->cache;
-    if (()!$_GET['debug']) && file_exists($f)) {
+    if ((!$_GET['debug']) && file_exists($f)) {
       $this->expires = (filemtime($f) + $this->timer - 1);
       if (
         ($this->expires > time())
