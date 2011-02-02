@@ -224,5 +224,6 @@ if (reset(get_included_files()) == __FILE__) {
     'query'     => $query,
   ) );
   $stream->headers();
-  echo $stream->get('json');
+  if ($_GET['debug'] and count($stream->errors)) var_dump($stream->errors)
+  else echo $stream->get('json');
 }
