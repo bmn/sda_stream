@@ -231,5 +231,5 @@ if (reset(get_included_files()) == __FILE__) {
     print 'Errors:<br/>';
     var_dump($stream->errors);
   }
-  elseif (!$_GET['debug']) echo $stream->get('json');
+  elseif (!$_GET['debugsbunny']) echo $stream->get('json');
 }
